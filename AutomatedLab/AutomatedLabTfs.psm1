@@ -92,11 +92,11 @@ function Install-LabTeamFoundationServer
 
     $installationJobs = @()
     $count = 0
-    foreach ( $machine in $tfsMachines)
+    foreach ($machine in $tfsMachines)
     {
         if ( Get-LabIssuingCA)
         {
-            $cert = Request-LabCertificate -Subject "CN=$machine" -TemplateName WebServer -SAN $machine.AzureConnectionInfo.DnsName -ComputerName $machine -PassThru -ErrorAction Stop
+            $cert = Request-LabCertificate -Subject "CN=$($machine.FQDN)" -TemplateName WebServer -SAN $machine.AzureConnectionInfo.DnsName -ComputerName $machine -PassThru -ErrorAction Stop
             $machine.InternalNotes.Add('CertificateThumbprint', $cert.Thumbprint)
             Export-Lab
         }
