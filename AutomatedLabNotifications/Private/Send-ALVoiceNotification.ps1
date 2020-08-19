@@ -1,4 +1,4 @@
-function Send-ALVoiceNotification
+﻿function Send-ALVoiceNotification
 {
     param
     (
@@ -12,7 +12,8 @@ function Send-ALVoiceNotification
     )
 
     $lab = Get-Lab
-    $voiceInfo = (Get-Module AutomatedLabNotifications)[0].PrivateData.Voice
+    $culture = Get-LabConfigurationItem -Name Notifications.NotificationProviders.Voice.Culture
+    $gender = Get-LabConfigurationItem -Name Notifications.NotificationProviders.Voice.Gender
 
     try
     {
@@ -26,13 +27,13 @@ function Send-ALVoiceNotification
     $synth = New-Object System.Speech.Synthesis.SpeechSynthesizer
     try
     {
-        $synth.SelectVoiceByHints($voiceInfo.Gender, $voiceInfo.Age, $null, $voiceInfo.Culture)
+        $synth.SelectVoiceByHints($gender, 30, $null, $culture)
     }
     catch {return}
 
     if (-not $synth.Voice)
     {
-        Write-Warning -Message ('No voice installed for culture {0} and gender {1}' -f $voiceInfo.Culture, $voiceInfo.Gender)
+        Write-PSFMessage -Level Warning -Message ('No voice installed for culture {0} and gender {1}' -f $culture, $gender)
         return;
     }
     $synth.SetOutputToDefaultAudioDevice()
@@ -44,5 +45,5 @@ function Send-ALVoiceNotification
         Live long and prosper.
         " -f $lab.Name, $lab.DefaultVirtualizationEngine, $Activity, $Message, $env:USERNAME
     $synth.Speak($Text)
-    $synth.Dispose()    
+    $synth.Dispose()
 }

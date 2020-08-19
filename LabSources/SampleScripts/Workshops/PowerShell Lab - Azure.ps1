@@ -1,4 +1,4 @@
-$labName = 'POSH<SOME UNIQUE DATA>' #THIS NAME MUST BE GLOBALLY UNIQUE
+﻿$labName = 'POSH<SOME UNIQUE DATA>' #THIS NAME MUST BE GLOBALLY UNIQUE
 
 $azureDefaultLocation = 'West Europe' #COMMENT OUT -DefaultLocationName BELOW TO USE THE FASTEST LOCATION
 
@@ -17,9 +17,9 @@ Add-LabAzureSubscription -DefaultLocationName $azureDefaultLocation
 Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.30.0/24
 
 #and the domain definition with the domain admin account
-Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Somepass1
+Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword 'P@ssw0rd!1'
 
-Set-LabInstallationCredential -Username Install -Password Somepass1
+Set-LabInstallationCredential -Username Install -Password 'P@ssw0rd!1'
 
 #defining default parameter values, as these ones are the same for all the machines
 $PSDefaultParameterValues = @{
@@ -28,7 +28,7 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:DomainName' = 'contoso.com'
     'Add-LabMachineDefinition:DnsServer1' = '192.168.30.10'
     'Add-LabMachineDefinition:DnsServer2' = '192.168.30.11'
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 Datacenter (Desktop Experience)'
 }
 
 #the first machine is the root domain controller
@@ -45,7 +45,10 @@ Add-LabMachineDefinition -Name POSHDC2 -Memory 512MB -Roles $roles -IpAddress 19
 
 #file server
 $roles = Get-LabMachineRoleDefinition -Role FileServer
-Add-LabMachineDefinition -Name POSHFS1 -Memory 512MB -Roles $roles -IpAddress 192.168.30.50
+Add-LabDiskDefinition -Name premium1 -DiskSizeInGb 128
+Add-LabDiskDefinition -Name premium2 -DiskSizeInGb 128
+# Using SSD storage for the additional disks
+Add-LabMachineDefinition -Name POSHFS1 -Memory 512MB -DiskName premium1,premium2 -Roles $roles -IpAddress 192.168.30.50 -AzureProperties @{StorageSku = 'StandardSSD_LRS'}
 
 #web server
 $roles = Get-LabMachineRoleDefinition -Role WebServer
@@ -60,26 +63,25 @@ Add-LabMachineDefinition -Name POSHSql1 -Memory 1GB -Roles $role -IpAddress 192.
 <# REMOVE THE COMMENT TO ADD THE SQL SERVER TO THE LAB - Using the BYOL licensing scheme
 #SQL server with demo databases
 $role = Get-LabMachineRoleDefinition -Role SQLServer2014 @{InstallSampleDatabase = 'true'}
-Add-LabMachineDefinition -Name POSHSql1 -Memory 1GB -Roles $role -IpAddress 192.168.30.52 -AzureProperties = @{'UseByolImage' = 'True'}
+Add-LabMachineDefinition -Name POSHSql1 -Memory 1GB -Roles $role -IpAddress 192.168.30.52 -AzureProperties @{'UseByolImage' = 'True'}
 #>
 
 <# REMOVE THE COMMENT TO ADD THE EXCHANGE SERVER TO THE LAB
 #Exchange 2013
-$roles = Get-LabMachineRoleDefinition -Role Exchange2013 -Properties @{ OrganizationName = 'TestOrg' }
-Add-LabMachineDefinition -Name POSHEx1 -Memory 4GB -Roles $roles -IpAddress 192.168.30.53
+$r = Get-LabPostInstallationActivity -CustomRole Exchange2013 -Properties @{ OrganizationName = 'TestOrg' }
+Add-LabMachineDefinition -Name POSHEx1 -Memory 4GB -IpAddress 192.168.30.53 -PostInstallationActivity $r
 #>
 
 <# REMOVE THE COMMENT TO ADD THE DEVELOPMENT CLIENT TO THE LAB
 #Development client in the child domain a with some extra tools
-Add-LabMachineDefinition -Name POSHClient1 -Memory 1GB -Role VisualStudio2013 -IpAddress 192.168.30.54
+Add-LabMachineDefinition -Name POSHClient1 -Memory 1GB -IpAddress 192.168.30.54
 #>
 
 Install-Lab
 
-<# REMOVE THE COMMENT TO INSTALL CLASSIC SHELL, NOTEPAD++ AND WINRAR ON ALL LAB MACHINES
+<# REMOVE THE COMMENT TO INSTALL NOTEPAD++ AND WINRAR ON ALL LAB MACHINES
 #Install software to all lab machines
 $machines = Get-LabVM
-Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu' -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\winrar.exe -CommandLine /S -AsJob
 Get-Job -Name 'Installation of*' | Wait-Job | Out-Null

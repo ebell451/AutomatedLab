@@ -18,11 +18,26 @@ namespace AutomatedLab
         private List<string> connectToVnets = new List<string>();
         private List<IPAddress> dnsServers = new List<IPAddress>();
         private List<IPAddress> issuedIpAddresses = new List<IPAddress>();
+        private AutomatedLab.NetworkAdapter managementAdapter = new AutomatedLab.NetworkAdapter();
+        private bool enableManagementAdapter;
+
+        [XmlAttribute]
+        public string AzureDnsLabel {get; set;}
 
         public List<AzureSubnet> Subnets
         {
             get { return subnets; }
             set { subnets = value; }
+        }
+
+        public string FriendlyName { get; set; }
+
+        public string ResourceName
+        {
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(FriendlyName)) { return FriendlyName; } else { return Name; }
+            }
         }
 
         [XmlAttribute]
@@ -83,9 +98,23 @@ namespace AutomatedLab
             set { issuedIpAddresses = value; }
         }
 
+        public AutomatedLab.NetworkAdapter ManagementAdapter
+        {
+            get { return managementAdapter; }
+            set { managementAdapter = value; }
+        }
+
+        [XmlAttribute]
+        public bool EnableManagementAdapter
+        {
+            get { return enableManagementAdapter; }
+            set { enableManagementAdapter = value; }
+        }
+
         public VirtualNetwork()
         {
             SwitchType = SwitchType.Internal;
+            enableManagementAdapter = true;
         }
 
         public override string ToString()

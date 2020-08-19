@@ -1,10 +1,9 @@
 #region New-LabNetworkSwitches
 function New-LabNetworkSwitches
 {
-    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param ()
-    
+
     Write-LogFunctionEntry
 
     $Script:data = Get-Lab
@@ -13,7 +12,7 @@ function New-LabNetworkSwitches
         Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
     }
-    
+
     $vmwareNetworks = $data.VirtualNetworks | Where-Object HostType -eq VMWare
     if ($vmwareNetworks)
     {
@@ -26,27 +25,27 @@ function New-LabNetworkSwitches
             }
             else
             {
-                Write-Verbose "Network '$($vmwareNetwork.Name)' found"
+                Write-PSFMessage "Network '$($vmwareNetwork.Name)' found"
             }
         }
     }
-        
-    Write-Verbose "Creating network switch '$($virtualNetwork.Name)'..."
+
+    Write-PSFMessage "Creating network switch '$($virtualNetwork.ResourceName)'..."
 
     $hypervNetworks = $data.VirtualNetworks | Where-Object HostType -eq HyperV
     if ($hypervNetworks)
     {
         New-LWHypervNetworkSwitch -VirtualNetwork $hypervNetworks
     }
-    
+
     $azureNetworks = $data.VirtualNetworks | Where-Object HostType -eq Azure
     if ($azureNetworks )
     {
-        New-LWAzureNetworkSwitch -VirtualNetwork $azureNetworks 
-    }    
-        
-    Write-Verbose 'done'
-    
+        New-LWAzureNetworkSwitch -VirtualNetwork $azureNetworks
+    }
+
+    Write-PSFMessage 'done'
+
     Write-LogFunctionExit
 }
 #endregion New-LabNetworkSwitches
@@ -54,17 +53,18 @@ function New-LabNetworkSwitches
 #region Remove-LabNetworkSwitches
 function Remove-LabNetworkSwitches
 {
-    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
-    param ()
-    
+    param (
+        [switch]$RemoveExternalSwitches
+    )
+
     $Script:data = Get-Lab
     if (-not $Script:data)
     {
         Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
     }
-    
+
     Write-LogFunctionEntry
 
     $virtualNetworks = $Script:data.VirtualNetworks | Where-Object HostType -eq VMWare
@@ -77,21 +77,21 @@ function Remove-LabNetworkSwitches
     $virtualNetworks = $Script:data.VirtualNetworks | Where-Object { $_.HostType -eq 'HyperV' -and $_.Name -ne 'Default Switch' }
     foreach ($virtualNetwork in $virtualNetworks)
     {
-        Write-Verbose "Removing Hyper-V network switch '$($virtualNetwork.Name)'..."
-        
-        if ($virtualNetwork.SwitchType -eq 'External')
+        Write-PSFMessage "Removing Hyper-V network switch '$($virtualNetwork.ResourceName)'..."
+
+        if ($virtualNetwork.SwitchType -eq 'External' -and -not $RemoveExternalSwitches)
         {
-            Write-ScreenInfo "The virtual switch '$($virtualNetwork.Name)' is of type external and will not be removed as it may also be used by other labs"
+            Write-ScreenInfo "The virtual switch '$($virtualNetwork.ResourceName)' is of type external and will not be removed as it may also be used by other labs"
             continue
         }
         else
         {
-            Remove-LWNetworkSwitch -Name $virtualNetwork.Name
+            Remove-LWNetworkSwitch -Name $virtualNetwork.ResourceName
         }
-        Write-Verbose '...done'
+        Write-PSFMessage '...done'
     }
-        
-    Write-Verbose 'done'
+
+    Write-PSFMessage 'done'
 
     Write-LogFunctionExit
 }

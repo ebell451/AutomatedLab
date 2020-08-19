@@ -44,12 +44,13 @@ namespace AutomatedLab
         private OperatingSystemType operatingSystemType;
         private bool gen2vmSupported;
         private LinuxType linuxType;
+        private bool skipDeployment;
 
         public LinuxType LinuxType
         {
             get
             {
-                if(System.Text.RegularExpressions.Regex.IsMatch(OperatingSystem.OperatingSystemName, "Windows"))
+                if (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystem.OperatingSystemName, "Windows"))
                 {
                     return LinuxType.Unknown;
                 }
@@ -62,6 +63,8 @@ namespace AutomatedLab
             }
         }
 
+        public string FriendlyName { get; set; }
+
         public bool Gen2VmSupported
         {
             get
@@ -70,6 +73,13 @@ namespace AutomatedLab
             }
         }
 
+        public string ResourceName
+        {
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(FriendlyName)) { return FriendlyName; } else { return Name; }
+            }
+        }
         public int LoadBalancerRdpPort { get; set; }
         public int LoadBalancerWinRmHttpPort { get; set; }
         public int LoadBalancerWinrmHttpsPort { get; set; }
@@ -80,7 +90,7 @@ namespace AutomatedLab
         {
             get
             {
-                return ((bool)(operatingSystem?.OperatingSystemName.Contains("Windows"))) ? OperatingSystemType.Windows : OperatingSystemType.Linux;
+                return operatingSystem.OperatingSystemType;
             }
         }
 
@@ -319,6 +329,8 @@ namespace AutomatedLab
             set { autoLogonPassword = value; }
         }
 
+        public Azure.AzureConnectionInfo AzureConnectionInfo {get; set;}
+
         public SerializableDictionary<string, string> AzureProperties
         {
             get
@@ -363,6 +375,12 @@ namespace AutomatedLab
             set { internalNotes = value; }
         }
 
+        public bool SkipDeployment
+        {
+            get { return skipDeployment; }
+            set { skipDeployment = value; }
+        }
+
         public Machine()
         {
             roles = new List<Role>();
@@ -378,7 +396,7 @@ namespace AutomatedLab
             return name;
         }
 
-        public PSCredential GetLocalCredential()
+        public PSCredential GetLocalCredential(bool Force = false)
         {
             var securePassword = new SecureString();
 
@@ -391,7 +409,7 @@ namespace AutomatedLab
             var dcRole = roles.Where(role => ((AutomatedLab.Roles)role.Name & dcRoles) == role.Name).FirstOrDefault();
 
             string userName = string.Empty;
-            if (dcRole == null)
+            if (dcRole == null || Force)
             {
                 //machine is not a domain controller, creating a local username 
                 userName = OperatingSystemType == OperatingSystemType.Linux ? "root" : string.Format(@"{0}\{1}", name, installationUser.UserName);

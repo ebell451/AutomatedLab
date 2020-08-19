@@ -4,42 +4,42 @@ function Invoke-LWCommand
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
-        
+
         [Parameter(Mandatory)]
         [System.Management.Automation.Runspaces.PSSession[]]$Session,
-        
+
         [string]$ActivityName,
-        
+
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyRemoteScript')]
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyScriptBlock')]
         [string]$DependencyFolderPath,
-        
+
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
         [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyLocalScript')]
         [Parameter(Mandatory, ParameterSetName = 'NoDependencyLocalScript')]
         [string]$ScriptFilePath,
-        
+
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyRemoteScript')]
         [string]$ScriptFileName,
-        
+
         [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyScriptBlock')]
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyScriptBlock')]
         [Parameter(Mandatory, ParameterSetName = 'NoDependencyScriptBlock')]
         [scriptblock]$ScriptBlock,
-        
+
         [Parameter(ParameterSetName = 'FileContentDependencyRemoteScript')]
         [Parameter(ParameterSetName = 'FileContentDependencyLocalScript')]
         [Parameter(ParameterSetName = 'FileContentDependencyScriptBlock')]
         [switch]$KeepFolder,
-        
+
         [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyScriptBlock')]
         [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyLocalScript')]
         [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyScript')]
         [string]$IsoImagePath,
-        
+
         [object[]]$ArgumentList,
-        
+
         [string]$ParameterVariableName,
 
         [Parameter(ParameterSetName = 'IsoImageDependencyScriptBlock')]
@@ -48,7 +48,7 @@ function Invoke-LWCommand
         [Parameter(ParameterSetName = 'FileContentDependencyRemoteScript')]
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
         [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyLocalScript')]
-        [Parameter(Mandatory, ParameterSetName = 'NoDependencyLocalScript')]        
+        [Parameter(Mandatory, ParameterSetName = 'NoDependencyLocalScript')]
         [int]$Retries,
 
         [Parameter(ParameterSetName = 'IsoImageDependencyScriptBlock')]
@@ -57,33 +57,41 @@ function Invoke-LWCommand
         [Parameter(ParameterSetName = 'FileContentDependencyRemoteScript')]
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
         [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyLocalScript')]
-        [Parameter(Mandatory, ParameterSetName = 'NoDependencyLocalScript')]        
+        [Parameter(Mandatory, ParameterSetName = 'NoDependencyLocalScript')]
         [int]$RetryIntervalInSeconds,
-        
+
         [int]$ThrottleLimit = 32,
-        
+
         [switch]$AsJob,
-        
+
         [switch]$PassThru
     )
-    
+
     Write-LogFunctionEntry
-    
+
     #required to supress verbose messages, warnings and errors
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    
+
     if ($DependencyFolderPath)
     {
-        if (-not (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath) -and -not (Test-Path -Path $DependencyFolderPath))
+        $result = ?? { (Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath) } `
+        { Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath } `
+        { Test-Path -Path $DependencyFolderPath }
+        
+        if (-not $result)
         {
             Write-Error "The DependencyFolderPath '$DependencyFolderPath' could not be found"
             return
         }
     }
-    
+
     if ($ScriptFilePath)
     {
-        if (-not (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $ScriptFilePath) -and -not (Test-Path -Path $ScriptFilePath -PathType Leaf))
+        $result = ?? { (Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $ScriptFilePath)} `
+        { Test-LabPathIsOnLabAzureLabSourcesStorage -Path $ScriptFilePath } `
+        { Test-Path -Path $ScriptFilePath }
+        
+        if (-not $result)
         {
             Write-Error "The ScriptFilePath '$ScriptFilePath' could not be found"
             return
@@ -91,22 +99,33 @@ function Invoke-LWCommand
     }
 
     $internalSession = New-Object System.Collections.ArrayList
-    $internalSession.AddRange($Session)
-    
+    $internalSession.AddRange(
+        @($Session | Foreach-Object {
+                if ($_.State -eq 'Broken')
+                {
+                    New-LabPSSession -Session $_
+                }
+                else
+                {
+                    $_
+                }
+        })
+    )
+
     if (-not $ActivityName)
     {
         $ActivityName = '<unnamed>'
     }
-    Write-Verbose -Message "Starting Activity '$ActivityName'"
-    
+    Write-PSFMessage -Message "Starting Activity '$ActivityName'"
+
     #if the image path is set we mount the image to the VM
     if ($PSCmdlet.ParameterSetName -like 'FileContentDependency*')
     {
-        Write-Verbose -Message "Copying files from '$DependencyFolderPath' to $ComputerName..."
-        
+        Write-PSFMessage -Message "Copying files from '$DependencyFolderPath' to $ComputerName..."
+
         if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath)
         {
-            Invoke-Command -Session $Session -ScriptBlock { Copy-Item -Path $args[0] -Destination C:\ -Recurse -Force } -ArgumentList $DependencyFolderPath
+            Invoke-Command -Session $Session -ScriptBlock { Copy-Item -Path $args[0] -Destination / -Recurse -Force } -ArgumentList $DependencyFolderPath
         }
         else
         {
@@ -118,34 +137,34 @@ function Invoke-LWCommand
             {
                 if ((Get-Item -Path $DependencyFolderPath).PSIsContainer)
                 {
-                    Send-Directory -SourceFolderPath $DependencyFolderPath -DestinationFolder (Join-Path -Path C:\ -ChildPath (Split-Path -Path $DependencyFolderPath -Leaf)) -Session $internalSession
+                    Send-Directory -SourceFolderPath $DependencyFolderPath -DestinationFolder (Join-Path -Path / -ChildPath (Split-Path -Path $DependencyFolderPath -Leaf)) -Session $internalSession
                 }
                 else
                 {
-                    Send-File -SourceFilePath $DependencyFolderPath -DestinationFolderPath C:\ -Session $internalSession
+                    Send-File -SourceFilePath $DependencyFolderPath -DestinationFolderPath / -Session $internalSession
                 }
             }
         }
-        
+
         if ($PSCmdlet.ParameterSetName -eq 'FileContentDependencyRemoteScript')
         {
             $cmd = ''
-            if ($ScriptFileName) 
+            if ($ScriptFileName)
             {
-                $cmd += "& '$(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))\$ScriptFileName'"
+                $cmd += "& '$(Join-Path -Path / -ChildPath (Split-Path $DependencyFolderPath -Leaf))\$ScriptFileName'"
             }
             if ($ParameterVariableName)
             {
                 $cmd += " @$ParameterVariableName"
             }
             $cmd += "`n"
-            if (-not $KeepFolder) 
+            if (-not $KeepFolder)
             {
-                $cmd += "Remove-Item '$(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))' -Recurse -Force" 
+                $cmd += "Remove-Item '$(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))' -Recurse -Force"
             }
-            
-            Write-Verbose -Message "Invoking script '$ScriptFileName'"
-            
+
+            Write-PSFMessage -Message "Invoking script '$ScriptFileName'"
+
             $parameters = @{ }
             $parameters.Add('Session', $internalSession)
             $parameters.Add('ScriptBlock', [scriptblock]::Create($cmd))
@@ -207,7 +226,7 @@ function Invoke-LWCommand
             $parameters.Add('ThrottleLimit', $ThrottleLimit)
         }
     }
-    
+
     if ($VerbosePreference -eq 'Continue') { $parameters.Add('Verbose', $VerbosePreference) }
     if ($DebugPreference -eq 'Continue') { $parameters.Add('Debug', $DebugPreference) }
 
@@ -215,14 +234,14 @@ function Invoke-LWCommand
 
     if (-not $AsJob -and $parameters.ScriptBlock)
     {
-        Write-Debug 'Adding LABHOSTNAME to scriptblock' 
+        Write-Debug 'Adding LABHOSTNAME to scriptblock'
         #in some situations a retry makes sense. In order to know which machines have done the job, the scriptblock must return the hostname
         $parameters.ScriptBlock = [scriptblock]::Create($parameters.ScriptBlock.ToString() + "`n;`"LABHOSTNAME:`$([System.Net.Dns]::GetHostName())`"`n")
     }
 
     if ($AsJob)
     {
-        $job = Invoke-Command @parameters -ErrorAction SilentlyContinue -ErrorVariable invokeError
+        $job = Invoke-Command @parameters -ErrorAction SilentlyContinue
     }
     else
     {
@@ -231,9 +250,9 @@ function Invoke-LWCommand
             $nonAvailableSessions = @($internalSession | Where-Object State -ne Opened)
             foreach ($nonAvailableSession in $nonAvailableSessions)
             {
-                Write-Verbose "Re-creating unavailable session for machine '$($nonAvailableSessions.ComputerName)'"
+                Write-PSFMessage "Re-creating unavailable session for machine '$($nonAvailableSessions.ComputerName)'"
                 $internalSession.Add((New-LabPSSession -Session $nonAvailableSession)) | Out-Null
-                Write-Verbose "removing unavailable session for machine '$($nonAvailableSessions.ComputerName)'"
+                Write-PSFMessage "removing unavailable session for machine '$($nonAvailableSessions.ComputerName)'"
                 $internalSession.Remove($nonAvailableSession)
             }
 
@@ -251,7 +270,7 @@ function Invoke-LWCommand
 
             if ($Retries -gt 0 -and $internalSession.Count -gt 0)
             {
-                Write-Verbose "Scriptblock did not run on all machines, retrying (Retries = $Retries)"
+                Write-PSFMessage "Scriptblock did not run on all machines, retrying (Retries = $Retries)"
                 Start-Sleep -Seconds $RetryIntervalInSeconds
             }
         }
@@ -272,11 +291,11 @@ function Invoke-LWCommand
     {
         $resultVariable = New-Variable -Name ("AL_$([guid]::NewGuid().Guid)") -Scope Global -PassThru
         $resultVariable.Value = $result
-        Write-Verbose "The Output of the task on machine '$($ComputerName)' will be available in the variable '$($resultVariable.Name)'"
+        Write-PSFMessage "The Output of the task on machine '$($ComputerName)' will be available in the variable '$($resultVariable.Name)'"
     }
-    
-    Write-Verbose -Message "Finished Installation Activity '$ActivityName'"
-    
+
+    Write-PSFMessage -Message "Finished Installation Activity '$ActivityName'"
+
     Write-LogFunctionExit -ReturnValue $resultVariable
 }
 #endregion Invoke-LWCommand
@@ -289,20 +308,20 @@ function Get-LWHypervWindowsFeature
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [AutomatedLab.Machine[]]$Machine,
-        
+
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string[]]$FeatureName,
-        
+
         [switch]$UseLocalCredential,
-        
+
         [switch]$AsJob
     )
-    
+
     Write-LogFunctionEntry
-    
+
     $activityName = "Get Windows Feature(s): '$($FeatureName -join ', ')'"
-    
+
     $result = @()
     foreach ($m in $Machine)
     {
@@ -316,17 +335,17 @@ function Get-LWHypervWindowsFeature
                     {
                         $cmd = [scriptblock]::Create("Get-WindowsOptionalFeature -Online -FeatureName $($feature) -WarningAction SilentlyContinue")
                         $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru
-                    }                  
+                    }
                 }
                 else
                 {
                     $cmd = [scriptblock]::Create("Get-WindowsOptionalFeature -Online -FeatureName $($FeatureName) -WarningAction SilentlyContinue")
                     $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru
-                }                
+                }
             }
             else
             {
-                $cmd = [scriptblock]::Create("Get-WindowsFeature $($FeatureName -join ', ')  -WarningAction SilentlyContinue")
+                $cmd = [scriptblock]::Create("Get-WindowsFeature $($FeatureName -join ', ') -WarningAction SilentlyContinue")
                 $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru
             }
         }
@@ -340,13 +359,13 @@ function Get-LWHypervWindowsFeature
                     {
                         $cmd = [scriptblock]::Create("DISM /online /get-featureinfo /featurename:$($feature)")
                         $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru
-                    
+
                         $parseddismOutput = $featureList | Select-String -Pattern "Feature Name :", "State :", "Restart Required :"
                         [string]$featureNamedismOutput = $parseddismOutput[0]
                         [string]$featureRRdismOutput = $parseddismOutput[1]
                         [string]$featureStatedismOutput = $parseddismOutput[2]
-                  
-                  
+
+
                         $result += [PSCustomObject]@{
                             FeatureName     = $featureNamedismOutput.Split(":")[1].Trim()
                             RestartRequired = $featureRRdismOutput.Split(":")[1].Trim()
@@ -359,12 +378,12 @@ function Get-LWHypervWindowsFeature
                     $cmd = [scriptblock]::Create("DISM /online /get-featureinfo /featurename:$($FeatureName)")
                     $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru
                     $parseddismOutput = $featureList | Select-String -Pattern "Feature Name :", "State :", "Restart Required :"
-                  
+
                     [string]$featureNamedismOutput = $parseddismOutput[0]
                     [string]$featureRRdismOutput = $parseddismOutput[1]
                     [string]$featureStatedismOutput = $parseddismOutput[2]
-                  
-                  
+
+
                     $result += [PSCustomObject]@{
                         FeatureName     = $featureNamedismOutput.Split(":")[1].Trim()
                         RestartRequired = $featureRRdismOutput.Split(":")[1].Trim()
@@ -379,7 +398,7 @@ function Get-LWHypervWindowsFeature
             }
         }
     }
-    
+
     $result
 
     Write-LogFunctionExit
@@ -394,20 +413,20 @@ function Get-LWAzureWindowsFeature
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [AutomatedLab.Machine[]]$Machine,
-        
+
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string[]]$FeatureName,
-        
+
         [switch]$UseLocalCredential,
-        
+
         [switch]$AsJob
     )
-    
+
     Write-LogFunctionEntry
-    
+
     $activityName = "Get Windows Feature(s): '$($FeatureName -join ', ')'"
-    
+
     $result = @()
     foreach ($m in $Machine)
     {
@@ -421,18 +440,18 @@ function Get-LWAzureWindowsFeature
                     {
                         $cmd = [scriptblock]::Create("Get-WindowsOptionalFeature -Online -FeatureName $($feature) -WarningAction SilentlyContinue")
                         $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob
-                    }                  
+                    }
                 }
                 else
                 {
                     $cmd = [scriptblock]::Create("Get-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -WarningAction SilentlyContinue")
                     $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob
-                }                
+                }
             }
             else
             {
                 $cmd = [scriptblock]::Create("Get-WindowsFeature $($FeatureName -join ', ')  -WarningAction SilentlyContinue")
-                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob                
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob
             }
         }
         else
@@ -445,13 +464,13 @@ function Get-LWAzureWindowsFeature
                     {
                         $cmd = [scriptblock]::Create("DISM /online /get-featureinfo /featurename:$($feature)")
                         $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob
-                    
+
                         $parseddismOutput = $featureList | Select-String -Pattern "Feature Name :", "State :", "Restart Required :"
                         [string]$featureNamedismOutput = $parseddismOutput[0]
                         [string]$featureRRdismOutput = $parseddismOutput[1]
                         [string]$featureStatedismOutput = $parseddismOutput[2]
-                  
-                  
+
+
                         $result += [PSCustomObject]@{
                             FeatureName     = $featureNamedismOutput.Split(":")[1].Trim()
                             RestartRequired = $featureRRdismOutput.Split(":")[1].Trim()
@@ -464,12 +483,12 @@ function Get-LWAzureWindowsFeature
                     $cmd = [scriptblock]::Create("DISM /online /get-featureinfo /featurename:$($FeatureName)")
                     $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob
                     $parseddismOutput = $featureList | Select-String -Pattern "Feature Name :", "State :", "Restart Required :"
-                  
+
                     [string]$featureNamedismOutput = $parseddismOutput[0]
                     [string]$featureRRdismOutput = $parseddismOutput[1]
                     [string]$featureStatedismOutput = $parseddismOutput[2]
-                  
-                  
+
+
                     $result += [PSCustomObject]@{
                         FeatureName     = $featureNamedismOutput.Split(":")[1].Trim()
                         RestartRequired = $featureRRdismOutput.Split(":")[1].Trim()
@@ -484,12 +503,12 @@ function Get-LWAzureWindowsFeature
             }
         }
     }
-    
+
     if ($PassThru)
     {
         $result
     }
-    
+
     Write-LogFunctionExit
 }
 #endregion Get-LWAzureWindowsFeature
@@ -502,26 +521,26 @@ function Install-LWHypervWindowsFeature
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [AutomatedLab.Machine[]]$Machine,
-        
+
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string[]]$FeatureName,
-        
+
         [switch]$IncludeAllSubFeature,
 
         [switch]$IncludeManagementTools,
-        
+
         [switch]$UseLocalCredential,
-        
+
         [switch]$AsJob,
-        
+
         [switch]$PassThru
     )
-    
+
     Write-LogFunctionEntry
-    
+
     $activityName = "Install Windows Feature(s): '$($FeatureName -join ', ')'"
-    
+
     $result = @()
     foreach ($m in $Machine)
     {
@@ -581,26 +600,26 @@ function Install-LWAzureWindowsFeature
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [AutomatedLab.Machine[]]$Machine,
-        
+
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string[]]$FeatureName,
-        
+
         [switch]$IncludeAllSubFeature,
-        
+
         [switch]$IncludeManagementTools,
-        
+
         [switch]$UseLocalCredential,
-        
+
         [switch]$AsJob,
-        
+
         [switch]$PassThru
     )
-    
+
     Write-LogFunctionEntry
-    
+
     $activityName = "Install Windows Feature(s): '$($FeatureName -join ', ')'"
-    
+
     $result = @()
     foreach ($m in $Machine)
     {
@@ -608,12 +627,12 @@ function Install-LWAzureWindowsFeature
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -All:`$$IncludeAllSubFeature -NoRestart -WarningAction SilentlyContinue")
+                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -Source 'C:\Windows\WinSXS' -All:`$$IncludeAllSubFeature -NoRestart -WarningAction SilentlyContinue")
                 $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
             }
             else
             {
-                $cmd = [scriptblock]::Create("Install-WindowsFeature $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -IncludeAllSubFeature:`$$IncludeAllSubFeature -IncludeManagementTools:`$$IncludeManagementTools -WarningAction SilentlyContinue")
+                $cmd = [scriptblock]::Create("Install-WindowsFeature $($FeatureName -join ', ') -Source 'C:\Windows\WinSXS' -IncludeAllSubFeature:`$$IncludeAllSubFeature -IncludeManagementTools:`$$IncludeManagementTools -WarningAction SilentlyContinue")
                 $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
             }
         }
@@ -642,12 +661,12 @@ function Install-LWAzureWindowsFeature
             }
         }
     }
-    
+
     if ($PassThru)
     {
         $result
     }
-    
+
     Write-LogFunctionExit
 }
 #endregion Install-LWAzureWindowsFeature
@@ -660,24 +679,24 @@ function Uninstall-LWHypervWindowsFeature
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [AutomatedLab.Machine[]]$Machine,
-        
+
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string[]]$FeatureName,
-        
+
         [switch]$IncludeManagementTools,
-                        
+
         [switch]$UseLocalCredential,
-        
+
         [switch]$AsJob,
-        
+
         [switch]$PassThru
     )
-    
+
     Write-LogFunctionEntry
-    
+
     $activityName = "Uninstall Windows Feature(s): '$($FeatureName -join ', ')'"
-    
+
     $result = @()
     foreach ($m in $Machine)
     {
@@ -737,24 +756,24 @@ function Uninstall-LWAzureWindowsFeature
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [AutomatedLab.Machine[]]$Machine,
-        
+
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string[]]$FeatureName,
-        
+
         [switch]$IncludeManagementTools,
-        
+
         [switch]$UseLocalCredential,
-        
+
         [switch]$AsJob,
-        
+
         [switch]$PassThru
     )
-    
+
     Write-LogFunctionEntry
-    
+
     $activityName = "Uninstall Windows Feature(s): '$($FeatureName -join ', ')'"
-    
+
     $result = @()
     foreach ($m in $Machine)
     {
@@ -796,12 +815,12 @@ function Uninstall-LWAzureWindowsFeature
             }
         }
     }
-    
+
     if ($PassThru)
     {
         $result
     }
-    
+
     Write-LogFunctionExit
 }
 #endregion Uninstall-LWAzureWindowsFeature
@@ -813,16 +832,16 @@ function Wait-LWLabJob
     (
         [Parameter(Mandatory, ParameterSetName = 'ByJob')]
         [AllowNull()]
-        [AllowEmptyCollection()] 
+        [AllowEmptyCollection()]
         [System.Management.Automation.Job[]]$Job,
 
         [Parameter(Mandatory, ParameterSetName = 'ByName')]
         [string[]]$Name,
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
 
-        [int]$Timeout = 60,
+        [int]$Timeout = 120,
 
         [switch]$NoNewLine,
 
@@ -832,18 +851,18 @@ function Wait-LWLabJob
     )
 
     if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
-    
+
     Write-LogFunctionEntry
-    
+
     Write-ProgressIndicator
 
     if (-not $Job -and -not $Name)
     {
-        Write-Verbose 'There is no job to wait for'
+        Write-PSFMessage 'There is no job to wait for'
         Write-LogFunctionExit
         return
     }
-    
+
     $start = (Get-Date)
 
     if ($Job)
@@ -872,9 +891,9 @@ function Wait-LWLabJob
         }
         until (($jobs.State -notcontains 'Running' -and $jobs.State -notcontains 'AtBreakPoint') -or ((Get-Date) -gt ($Start.AddMinutes($Timeout))))
     }
-    
+
     Write-ProgressIndicatorEnd
-    
+
     if ((Get-Date) -gt ($Start.AddMinutes($Timeout)))
     {
         $jobs = Get-Job -Id $jobs.Id | Where-Object State -eq Running

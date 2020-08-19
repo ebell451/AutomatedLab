@@ -13,12 +13,12 @@
 	        The ID of the template in the template group
         .EXAMPLE
             C:\PS> Install-OSCNetFx3 -Online
-		
+
 	        This command shows how to download .NET Framework 3.5 online and install it.
         .EXAMPLE
             C:\PS> Install-OSCNetFx3 -LocalSource G:\sources\sxs
-		
-	        This command shows how to use local source to install .NET Framework 3.5.			
+
+	        This command shows how to use local source to install .NET Framework 3.5.
     #>
     [CmdletBinding(DefaultParameterSetName = 'Local')]
     Param
@@ -35,7 +35,7 @@
 	    return
     }
 
-    $osName = (Get-WmiObject "win32_operatingsystem" | Select caption).Caption
+    $osName = (Get-CimInstance "win32_operatingsystem" | Select-Object caption).Caption
     if ($osName -notlike '*Microsoft Windows 8*')
     {
         Write-Error 'This script only runs on Windows 8'
@@ -52,7 +52,7 @@
     if($LocalSource)
     {
 	    Write-Host "Installing .Net Framework 3.5, do not close this prompt..."
-	    DISM /Online /Enable-Feature /FeatureName:NetFx3 /All /LimitAccess /Source:$LocalSource | Out-Null 
+	    DISM /Online /Enable-Feature /FeatureName:NetFx3 /All /LimitAccess /Source:$LocalSource | Out-Null
 	    $result = Dism /online /Get-featureinfo /featurename:NetFx3
 	    if($result -contains "State : Enabled")
 	    {
@@ -63,10 +63,10 @@
 		    Write-Host "Failed to install Install .Net Framework 3.5,please make sure the local source is correct."
 	    }
     }
-    Else 
-    {	
-	    Write-Host "Installing .Net Framework 3.5, do not close this prompt..." | 
-	    Dism /online /Enable-feature /featurename:NetFx3 /All | Out-Null 
+    Else
+    {
+	    Write-Host "Installing .Net Framework 3.5, do not close this prompt..." |
+	    Dism /online /Enable-feature /featurename:NetFx3 /All | Out-Null
 	    $result = Dism /online /Get-featureinfo /featurename:NetFx3
 	    if($result -contains "State : Enabled")
 	    {

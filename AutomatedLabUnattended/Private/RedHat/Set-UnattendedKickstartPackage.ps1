@@ -11,25 +11,37 @@ function Set-UnattendedKickstartPackage
     }
     elseif ($Package -like '*KDE*')
     {
-        Write-Warning -Message 'Adding KDE UI to RHEL/CentOS via kickstart file is not supported. Please configure your UI manually.'
+        Write-PSFMessage -Level Warning -Message 'Adding KDE UI to RHEL/CentOS via kickstart file is not supported. Please configure your UI manually.'
     }
 
     $script:un.Add('%packages --ignoremissing')
     $script:un.Add('@core')
+    $required = @(
+        'oddjob'
+        'oddjob-mkhomedir'
+        'sssd'
+        'adcli'
+        'krb5-workstation'
+        'realmd'
+        'samba-common'
+        'samba-common-tools'
+        'authselect-compat'
+        'sshd'
+    )
 
     foreach ($p in $Package)
     {
-        if ($p -eq 'core') { continue }
+        if ($p -eq 'core' -or $p -in $required) { continue }
 
         $script:un.Add(('@{0}' -f $p))
 
         if ($p -like '*gnome*') { $script:un.Add('@^graphical-server-environment')}
     }
 
-    $script:un.Add('oddjob')
-    $script:un.Add('oddjob-mkhomedir')
-    $script:un.Add('sssd')
-    $script:un.Add('adcli')
-    $script:un.Add('krb5-workstation')
+    foreach ($p in $required)
+    {
+        $script:un.Add($p)
+    }
+
     $script:un.Add('%end')
 }

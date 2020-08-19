@@ -1,4 +1,4 @@
-function Send-ALMailNotification
+﻿function Send-ALMailNotification
 {
     param
     (
@@ -22,16 +22,16 @@ function Send-ALMailNotification
 "@
 
     $mailParameters = @{
-        SmtpServer =  $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Mail.SmtpServer
-        From = $module.PrivateDate.From
-        CC = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Mail.CC
-        To = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Mail.To
-        Priority = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Mail.Priority
-        Port = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Mail.Port
+        SmtpServer =  Get-LabConfigurationItem -Name Notifications.NotificationProviders.Mail.SmtpServer
+        From = Get-LabConfigurationItem -Name Notifications.NotificationProviders.Mail.From
+        CC = Get-LabConfigurationItem -Name Notifications.NotificationProviders.Mail.CC
+        To = Get-LabConfigurationItem -Name Notifications.NotificationProviders.Mail.To
+        Priority = Get-LabConfigurationItem -Name Notifications.NotificationProviders.Mail.Priority
+        Port = Get-LabConfigurationItem -Name Notifications.NotificationProviders.Mail.Port
         Body = $body
         Subject = "AutomatedLab notification: $($lab.Name) $Activity"
     }
 
-    
+
     Send-MailMessage @mailParameters
 }

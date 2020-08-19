@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Mandatory)]
     [string]$ProGetDownloadLink,
 
@@ -23,7 +23,7 @@ $installedDotnetVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $proGetS
 if (-not ($installedDotnetVersion | Where-Object Version -GT 4.5))
 {
     Write-ScreenInfo "Installing .net Framework 4.5.2 on '$proGetServer'" -NoNewLine
-    $net452Link = (Get-Module AutomatedLab).PrivateData.dotnet452DownloadLink
+    $net452Link = Get-LabConfigurationItem -Name dotnet452DownloadLink
     $dotnet452Installer = Get-LabInternetFile -Uri $net452Link -Path $labSources\SoftwarePackages -PassThru
     Install-LabSoftwarePackage -Path $dotnet452Installer.FullName -CommandLine '/q /log c:\dotnet452.txt' -ComputerName $proGetServer -AsScheduledJob -UseShellExecute -AsJob -NoDisplay
     Wait-LabVMRestart -ComputerName $proGetServer -TimeoutInMinutes 30
@@ -33,7 +33,7 @@ else
     Write-ScreenInfo ".net Versions installed on '$proGetServer' are '$($installedDotnetVersion.Version -join ', ')', skipping .net Framework 4.5.2 installation"
 }
 
-if (-not (Test-LabMachineInternetConnectivity -ComputerName (Get-LabVM -Role Routing)))
+if (-not (Test-LabMachineInternetConnectivity -ComputerName $proGetServer))
 {
     Write-Error "The lab is not connected to the internet. Internet connectivity is required to install ProGet. Check the configuration on the machines with the Routing role."
     return
@@ -50,8 +50,10 @@ Invoke-LabCommand -ActivityName 'Removing Default Web Page' -ScriptBlock {
 #download ProGet
 $proGetSetupFile = Get-LabInternetFile -Uri $ProGetDownloadLink -Path $labSources\SoftwarePackages -PassThru
 
-$installArgs = '/Edition=Trial /EmailAddress=AutomatedLab@test.com /FullName=AutomatedLab /ConnectionString="Data Source={0}; Initial Catalog=ProGet; Integrated Security=True;" /UseIntegratedWebServer=false /ConfigureIIS /Port=80 /LogFile=C:\ProGetInstallation.log /S'
-$installArgs = $installArgs -f $SqlServer
+$emailAddressPart1 = (1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join ''
+$emailAddressPart2 = (1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join ''
+$installArgs = '/Edition=Trial /EmailAddress={0}@{1}.com /FullName={0} /ConnectionString="Data Source={2}; Initial Catalog=ProGet; Integrated Security=True;" /UseIntegratedWebServer=false /ConfigureIIS /Port=80 /LogFile=C:\ProGetInstallation.log /S'
+$installArgs = $installArgs -f $emailAddressPart1, $emailAddressPart2, $SqlServer
 
 Write-ScreenInfo "Installing ProGet on server '$proGetServer'"
 Write-Verbose "Installation Agrs are: '$installArgs'"
@@ -76,20 +78,20 @@ GO
 DECLARE @roleId int
 
 SELECT @roleId = [Role_Id]
-    FROM [ProGet].[dbo].[Roles] 
+    FROM [ProGet].[dbo].[Roles]
     WHERE [Role_Name] = 'Administer'
 
-INSERT INTO [ProGet].[dbo].[Privileges] 
+INSERT INTO [ProGet].[dbo].[Privileges]
     VALUES ('Domain Admins@{1}', 'G', @roleId, NULL, 'G', 3)
 GO
 
 -- give Domain Users the 'Publish Packages' privilege
 DECLARE @roleId int
 SELECT @roleId = [Role_Id]
-    FROM [ProGet].[dbo].[Roles] 
+    FROM [ProGet].[dbo].[Roles]
     WHERE [Role_Name] = 'Publish Packages'
 
-INSERT INTO [ProGet].[dbo].[Privileges] 
+INSERT INTO [ProGet].[dbo].[Privileges]
     VALUES ('Domain Users@{1}', 'G', @roleId, NULL, 'G', 3)
 GO
 
@@ -99,12 +101,9 @@ SELECT @roleId = [Role_Id]
     FROM [ProGet].[dbo].[Roles]
     WHERE [Role_Name] = 'View & Download Packages'
 
-INSERT INTO [ProGet].[dbo].[Privileges] 
+INSERT INTO [ProGet].[dbo].[Privileges]
     VALUES ('Anonymous', 'U', @roleId, NULL, 'G', 3)
 GO
-
---INSERT INTO [ProGet].[dbo].[Configuration] 
---VALUES ('Web.InvalidatePrivilegesCachedBeforeDate', '2016-05-31T12:37:00.7751728Z')
 
 -- Change user directory to 'Active Directory with Multiple Domains user directory'
 UPDATE [ProGet].[dbo].[Configuration]
@@ -113,8 +112,8 @@ UPDATE [ProGet].[dbo].[Configuration]
 GO
 
 -- add a internal PowerShell feed
-INSERT INTO [dbo].[Feeds] ([Feed_Name], [Feed_Description], [Active_Indicator], [Cache_Connectors_Indicator], [DropPath_Text], [FeedPathOverride_Text], [FeedType_Name], [PackageStoreConfiguration_Xml], [SyncToken_Bytes], [SyncTarget_Url], [LastSync_Date], [AllowUnknownLicenses_Indicator], [FeedConfiguration_Xml])
-VALUES('PowerShell', 'Internal Feed', 'Y', 'Y', NULL, NULL, 'PowerShell', NULL, NULL, NULL, NULL, 'Y', '<Inedo.ProGet.Feeds.NuGet.NuGetFeedConfig Assembly="ProGetCoreEx"><Properties SymbolServerEnabled="False" StripSymbolFiles="False" StripSourceCodeInvert="False" UseLegacyVersioning="False" /></Inedo.ProGet.Feeds.NuGet.NuGetFeedConfig>')
+INSERT INTO [dbo].[Feeds] ([Feed_Name], [Feed_Description], [Active_Indicator], [Cache_Connectors_Indicator], [DropPath_Text], [FeedPathOverride_Text], [FeedType_Name], [PackageStoreConfiguration_Xml], [LastSync_Date], [AllowUnknownLicenses_Indicator], [FeedConfiguration_Xml])
+VALUES('PowerShell', 'Internal Feed', 'Y', 'Y', NULL, NULL, 'PowerShell', NULL, NULL, 'Y', '<Inedo.ProGet.Feeds.NuGet.NuGetFeedConfig Assembly="ProGetCoreEx"><Properties SymbolServerEnabled="False" StripSymbolFiles="False" StripSourceCodeInvert="False" UseLegacyVersioning="False" /></Inedo.ProGet.Feeds.NuGet.NuGetFeedConfig>')
 
 GO
 '@ -f $ComputerName, $proGetServer.DomainName, $flatDomainName
@@ -135,7 +134,7 @@ $activationRetries = 10
 while (-not $isActivated -and $activationRetries -gt 0)
 {
     Write-ScreenInfo 'ProGet is not activated yet, retrying...'
-    $isActivated = Invoke-LabCommand -ActivityName 'Verifying ProGet activation' -ComputerName $sqlServer -ScriptBlock { 
+    $isActivated = Invoke-LabCommand -ActivityName 'Verifying ProGet activation' -ComputerName $sqlServer -ScriptBlock {
         $cn = New-Object System.Data.SqlClient.SqlConnection("Server=localhost;Database=ProGet;Trusted_Connection=True;")
         $cn.Open() | Out-Null
 
@@ -158,7 +157,7 @@ while (-not $isActivated -and $activationRetries -gt 0)
         iisreset.exe | Out-Null
 
         Start-Sleep -Seconds 30
-        Invoke-WebRequest -Uri http://localhost:80
+        Invoke-WebRequest -Uri http://localhost:80 -UseBasicParsing
         Start-Sleep -Seconds 30
 
     } -NoDisplay
@@ -173,7 +172,7 @@ if (-not $isActivated)
 }
 else
 {
-    Write-ScreenInfo 'ProGet was successfully activated' 
+    Write-ScreenInfo 'ProGet was successfully activated'
 }
 
 Write-ScreenInfo 'ProGet installation finished'

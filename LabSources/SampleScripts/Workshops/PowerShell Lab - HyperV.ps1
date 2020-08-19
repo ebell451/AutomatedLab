@@ -1,4 +1,4 @@
-$labName = 'POSH'
+﻿$labName = 'POSH'
 
 #--------------------------------------------------------------------------------------------------------------------
 #----------------------- CHANGING ANYTHING BEYOND THIS LINE SHOULD NOT BE REQUIRED ----------------------------------
@@ -25,7 +25,7 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:DomainName' = 'contoso.com'
     'Add-LabMachineDefinition:DnsServer1' = '192.168.30.10'
     'Add-LabMachineDefinition:DnsServer2' = '192.168.30.11'
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 Datacenter (Desktop Experience)'
 }
 
 #The PostInstallationActivity is just creating some users
@@ -38,7 +38,7 @@ Add-LabMachineDefinition -Name POSHDC1 -Memory 512MB -Roles RootDC -IpAddress 19
 Add-LabMachineDefinition -Name POSHDC2 -Memory 512MB -Roles DC -IpAddress 192.168.30.11
 
 #file server
-Add-LabMachineDefinition -Name POSHFS1 -Memory 512MB -Roles FileServer -IpAddress 192.168.30.50 
+Add-LabMachineDefinition -Name POSHFS1 -Memory 512MB -Roles FileServer -IpAddress 192.168.30.50
 
 #web server
 Add-LabMachineDefinition -Name POSHWeb1 -Memory 512MB -Roles WebServer -IpAddress 192.168.30.51
@@ -52,8 +52,8 @@ Add-LabMachineDefinition -Name POSHSql1 -Memory 1GB -Roles $role -IpAddress 192.
 
 <# REMOVE THE COMMENT TO ADD THE EXCHANGE SERVER TO THE LAB
 #Exchange 2013
-$roles = Get-LabMachineRoleDefinition -Role Exchange2013 -Properties @{ OrganizationName = 'TestOrg' }
-Add-LabMachineDefinition -Name POSHEx1 -Memory 4GB -Roles $roles -IpAddress 192.168.30.53
+$roles = Get-LabPostInstallationActivity -CustomRole Exchange2013 -Properties @{ OrganizationName = 'TestOrg' }
+Add-LabMachineDefinition -Name POSHEx1 -Memory 4GB -PostInstallationActivity $roles -IpAddress 192.168.30.53
 #>
 
 <# REMOVE THE COMMENT TO ADD THE DEVELOPMENT CLIENT TO THE LAB
@@ -64,10 +64,9 @@ Add-LabMachineDefinition -Name POSHClient1 -Memory 1GB -OperatingSystem 'Windows
 
 Install-Lab
 
-<# REMOVE THE COMMENT TO INSTALL CLASSIC SHELL, NOTEPAD++ AND WINRAR ON ALL LAB MACHINES
+<# REMOVE THE COMMENT TO INSTALL NOTEPAD++ AND WINRAR ON ALL LAB MACHINES
 #Install software to all lab machines
 $machines = Get-LabVM
-Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu' -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\winrar.exe -CommandLine /S -AsJob
 Get-Job -Name 'Installation of*' | Wait-Job | Out-Null

@@ -1,4 +1,4 @@
-New-PolarisRouteMiddleware -Name JsonBodyParser -ScriptBlock {
+﻿New-PolarisRouteMiddleware -Name JsonBodyParser -ScriptBlock {
     if ($Request.BodyString -ne $null)
     {
         $Request.Body = $Request.BodyString | ConvertFrom-Json
@@ -20,7 +20,7 @@ New-PolarisPostRoute -Path /Lab -ScriptBlock {
     {
         [void] (New-Item -Path C:\Polaris\LabJobs -ItemType Directory)
     }
-    
+
     New-Item -ItemType File -Path C:\Polaris\LabJobs\$labGuid
     $t = New-JobTrigger -Once -At (Get-Date).AddSeconds(5)
     $job = Register-ScheduledJob -ScriptBlock $labScriptBlock -Name $labGuid -Trigger $t
@@ -41,7 +41,7 @@ New-PolarisGetRoute -Force -Verbose -Path /Lab -ScriptBlock {
         }
 
         $lab = Import-Lab -Name $labName -PassThru
-        
+
         if ($lab)
         {
             $response.Json(($lab | ConvertTo-Json))
@@ -108,4 +108,5 @@ New-PolarisDeleteRoute -Path /Lab -ScriptBlock {
 }
 
 Start-Polaris -Port 80
-Read-Host
+while ($true)
+{ Start-Sleep 1 }

@@ -1,9 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26403.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29411.108
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Installer", "Installer\Installer.wixproj", "{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A27BCDC6-9D37-46D2-805F-930A509EFC9D} = {A27BCDC6-9D37-46D2-805F-930A509EFC9D}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "TestClient\TestClient.csproj", "{3662119A-C291-4BEC-8C6C-EBE802042E7B}"
 EndProject
@@ -43,7 +46,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLabWorker", "Autom
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLabDefinition", "AutomatedLabDefinition", "{688118CF-DFF0-484C-B9DA-EE9B99B6CBD6}"
 	ProjectSection(SolutionItems) = preProject
-		AutomatedLabDefinition\AutomatedLabDefinition.Help.xml = AutomatedLabDefinition\AutomatedLabDefinition.Help.xml
 		AutomatedLabDefinition\AutomatedLabDefinition.psd1 = AutomatedLabDefinition\AutomatedLabDefinition.psd1
 		AutomatedLabDefinition\AutomatedLabDefinition.psm1 = AutomatedLabDefinition\AutomatedLabDefinition.psm1
 		AutomatedLabDefinition\AutomatedLabDefinitionAzureServices.psm1 = AutomatedLabDefinition\AutomatedLabDefinitionAzureServices.psm1
@@ -70,8 +72,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PSLog", "PSLog", "{81D0BB90
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab", "AutomatedLab", "{03FEFD6A-B999-4BBA-875B-6CFA083E43CC}"
 	ProjectSection(SolutionItems) = preProject
+		AutomatedLab\AutomatedLab-help.xml = AutomatedLab\AutomatedLab-help.xml
 		AutomatedLab\AutomatedLab.format.ps1xml = AutomatedLab\AutomatedLab.format.ps1xml
-		AutomatedLab\AutomatedLab.Help.xml = AutomatedLab\AutomatedLab.Help.xml
 		AutomatedLab\AutomatedLab.init.ps1 = AutomatedLab\AutomatedLab.init.ps1
 		AutomatedLab\AutomatedLab.psd1 = AutomatedLab\AutomatedLab.psd1
 		AutomatedLab\AutomatedLab.psm1 = AutomatedLab\AutomatedLab.psm1
@@ -84,6 +86,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab", "AutomatedLa
 		AutomatedLab\AutomatedLabDsc.psm1 = AutomatedLab\AutomatedLabDsc.psm1
 		AutomatedLab\AutomatedLabFailover.psm1 = AutomatedLab\AutomatedLabFailover.psm1
 		AutomatedLab\AutomatedLabHybrid.psm1 = AutomatedLab\AutomatedLabHybrid.psm1
+		AutomatedLab\AutomatedLabHyperV.psm1 = AutomatedLab\AutomatedLabHyperV.psm1
 		AutomatedLab\AutomatedLabInternals.psm1 = AutomatedLab\AutomatedLabInternals.psm1
 		AutomatedLab\AutomatedLabNetwork.psm1 = AutomatedLab\AutomatedLabNetwork.psm1
 		AutomatedLab\AutomatedLabOffice.psm1 = AutomatedLab\AutomatedLabOffice.psm1
@@ -169,7 +172,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workshops", "Workshops", "{
 		LabSources\SampleScripts\Workshops\PowerShell Lab - HyperV.ps1 = LabSources\SampleScripts\Workshops\PowerShell Lab - HyperV.ps1
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LabXml", "LabXml\LabXml.csproj", "{A27BCDC6-9D37-46D2-805F-930A509EFC9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LabXml", "LabXml\LabXml.csproj", "{A27BCDC6-9D37-46D2-805F-930A509EFC9D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HyperV", "HyperV", "{F808D90D-4D58-4532-8041-ED753492C589}"
 	ProjectSection(SolutionItems) = preProject
@@ -193,6 +196,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HyperV", "HyperV", "{4121F3
 		LabSources\SampleScripts\HyperV\PKI Two Tier - Workgroup and Domain - Custom Production Deployment.ps1 = LabSources\SampleScripts\HyperV\PKI Two Tier - Workgroup and Domain - Custom Production Deployment.ps1
 		LabSources\SampleScripts\HyperV\PKI Two Tier - Workgroup and Domain - Typical Production Deployment.ps1 = LabSources\SampleScripts\HyperV\PKI Two Tier - Workgroup and Domain - Typical Production Deployment.ps1
 		LabSources\SampleScripts\HyperV\Single 10 Client with Office, VS and Reflector.ps1 = LabSources\SampleScripts\HyperV\Single 10 Client with Office, VS and Reflector.ps1
+		LabSources\SampleScripts\HyperV\Single 10 Client with Office2019.ps1 = LabSources\SampleScripts\HyperV\Single 10 Client with Office2019.ps1
 		LabSources\SampleScripts\HyperV\Single 10 Client.ps1 = LabSources\SampleScripts\HyperV\Single 10 Client.ps1
 		LabSources\SampleScripts\HyperV\Single 2008R2 Server.ps1 = LabSources\SampleScripts\HyperV\Single 2008R2 Server.ps1
 		LabSources\SampleScripts\HyperV\Single 2012R2 Server DC SQL2014 Web CA.ps1 = LabSources\SampleScripts\HyperV\Single 2012R2 Server DC SQL2014 Web CA.ps1
@@ -221,6 +225,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scenarios", "Scenarios", "{CA050EFB-B967-4AC6-9F7B-1AC6B63895F2}"
 	ProjectSection(SolutionItems) = preProject
 		LabSources\SampleScripts\Scenarios\AGPM Lab 1.ps1 = LabSources\SampleScripts\Scenarios\AGPM Lab 1.ps1
+		LabSources\SampleScripts\Scenarios\CM-1902.ps1 = LabSources\SampleScripts\Scenarios\CM-1902.ps1
 		LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1 = LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1
 		LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1 = LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1
 		LabSources\SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1 = LabSources\SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1
@@ -232,6 +237,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scenarios", "Scenarios", "{
 		LabSources\SampleScripts\Scenarios\MDT Lab 1, MDT Server 1.ps1 = LabSources\SampleScripts\Scenarios\MDT Lab 1, MDT Server 1.ps1
 		LabSources\SampleScripts\Scenarios\MDT Lab 2, DC and MDT Server.ps1 = LabSources\SampleScripts\Scenarios\MDT Lab 2, DC and MDT Server.ps1
 		LabSources\SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1 = LabSources\SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1
+		LabSources\SampleScripts\Scenarios\NuGetServer.ps1 = LabSources\SampleScripts\Scenarios\NuGetServer.ps1
+		LabSources\SampleScripts\Scenarios\ProGet Lab - Azure.ps1 = LabSources\SampleScripts\Scenarios\ProGet Lab - Azure.ps1
 		LabSources\SampleScripts\Scenarios\ProGet Lab - HyperV.ps1 = LabSources\SampleScripts\Scenarios\ProGet Lab - HyperV.ps1
 		LabSources\SampleScripts\Scenarios\SCCM Lab 1.ps1 = LabSources\SampleScripts\Scenarios\SCCM Lab 1.ps1
 		LabSources\SampleScripts\Scenarios\TFS 2015 Deployment.ps1 = LabSources\SampleScripts\Scenarios\TFS 2015 Deployment.ps1
@@ -257,6 +264,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupDscPullServer", "Setup
 		LabSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1
 		LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1
 		LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1
+		LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerSql.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerSql.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Introduction", "Introduction", "{45F867E3-BF98-47D0-8B12-D6F75A4C8D1B}"
@@ -269,6 +277,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Introduction", "Introductio
 		LabSources\SampleScripts\Introduction\06 SQL Server and client, domain joined.ps1 = LabSources\SampleScripts\Introduction\06 SQL Server and client, domain joined.ps1
 		LabSources\SampleScripts\Introduction\07.1 Exchange 2013 Server and client, domain joined.ps1 = LabSources\SampleScripts\Introduction\07.1 Exchange 2013 Server and client, domain joined.ps1
 		LabSources\SampleScripts\Introduction\07.2 Exchange 2016 Server and client, domain joined.ps1 = LabSources\SampleScripts\Introduction\07.2 Exchange 2016 Server and client, domain joined.ps1
+		LabSources\SampleScripts\Introduction\07.3 Exchange 2019 Server and client, domain joined.ps1 = LabSources\SampleScripts\Introduction\07.3 Exchange 2019 Server and client, domain joined.ps1
 		LabSources\SampleScripts\Introduction\08 Standalone Root CA, Sub Ca domain joined.ps1 = LabSources\SampleScripts\Introduction\08 Standalone Root CA, Sub Ca domain joined.ps1
 		LabSources\SampleScripts\Introduction\09 Web Servers with SSL certs, Root CA, domain joined.ps1 = LabSources\SampleScripts\Introduction\09 Web Servers with SSL certs, Root CA, domain joined.ps1
 		LabSources\SampleScripts\Introduction\10 Development Client, domain joined (internet facing).ps1 = LabSources\SampleScripts\Introduction\10 Development Client, domain joined (internet facing).ps1
@@ -462,6 +471,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assets", "Assets", "{17D0AC
 		Assets\Automated-Lab_icon256.png = Assets\Automated-Lab_icon256.png
 		Assets\Automated-Lab_icon512.png = Assets\Automated-Lab_icon512.png
 		Assets\Automated-Lab_icon64.png = Assets\Automated-Lab_icon64.png
+		Assets\ProductKeys.xml = Assets\ProductKeys.xml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSiteDefaultContent", "WebSiteDefaultContent", "{F8AE4BA3-E199-4E0A-A236-75EF8AB9F3CE}"
@@ -559,6 +569,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab.Ships", "Autom
 		AutomatedLab.Ships\AutomatedLab.Ships.psm1 = AutomatedLab.Ships\AutomatedLab.Ships.psm1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab.Recipe", "AutomatedLab.Recipe", "{40429016-010A-47B7-AF3B-2851A5BB19BF}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab.Recipe\AutomatedLab.Recipe.psd1 = AutomatedLab.Recipe\AutomatedLab.Recipe.psd1
+		AutomatedLab.Recipe\AutomatedLab.Recipe.psm1 = AutomatedLab.Recipe\AutomatedLab.Recipe.psm1
+		AutomatedLab.Recipe\README.md = AutomatedLab.Recipe\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Public", "Public", "{572648CE-ED10-4649-A612-76B0D6877884}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab.Recipe\Public\Get-LabRecipe.ps1 = AutomatedLab.Recipe\Public\Get-LabRecipe.ps1
+		AutomatedLab.Recipe\Public\Invoke-LabRecipe.ps1 = AutomatedLab.Recipe\Public\Invoke-LabRecipe.ps1
+		AutomatedLab.Recipe\Public\New-LabRecipe.ps1 = AutomatedLab.Recipe\Public\New-LabRecipe.ps1
+		AutomatedLab.Recipe\Public\Remove-LabRecipe.ps1 = AutomatedLab.Recipe\Public\Remove-LabRecipe.ps1
+	EndProjectSection
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SCCM", "SCCM", "{6C3621FE-6083-4F1A-8371-8CCF4DB53FDD}"
 	ProjectSection(SolutionItems) = preProject
 		LabSources\CustomRoles\SCCM\DownloadAdk.ps1 = LabSources\CustomRoles\SCCM\DownloadAdk.ps1
@@ -579,6 +604,189 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Public", "Public", "{3CFA51
 		AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Remove-PerformanceDataCollectorSet.ps1 = AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Remove-PerformanceDataCollectorSet.ps1
 		AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Start-PerformanceDataCollectorSet.ps1 = AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Start-PerformanceDataCollectorSet.ps1
 		AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Stop-PerformanceDataCollectorSet.ps1 = AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Stop-PerformanceDataCollectorSet.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Public", "Public", "{B0910874-C607-4643-96AD-AADDA639E365}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLabUnattended\Public\Add-UnattendedNetworkAdapter.ps1 = AutomatedLabUnattended\Public\Add-UnattendedNetworkAdapter.ps1
+		AutomatedLabUnattended\Public\Add-UnattendedRenameNetworkAdapters.ps1 = AutomatedLabUnattended\Public\Add-UnattendedRenameNetworkAdapters.ps1
+		AutomatedLabUnattended\Public\Add-UnattendedSynchronousCommand.ps1 = AutomatedLabUnattended\Public\Add-UnattendedSynchronousCommand.ps1
+		AutomatedLabUnattended\Public\Export-UnattendedFile.ps1 = AutomatedLabUnattended\Public\Export-UnattendedFile.ps1
+		AutomatedLabUnattended\Public\Get-UnattendedContent.ps1 = AutomatedLabUnattended\Public\Get-UnattendedContent.ps1
+		AutomatedLabUnattended\Public\Import-UnattendedContent.ps1 = AutomatedLabUnattended\Public\Import-UnattendedContent.ps1
+		AutomatedLabUnattended\Public\Import-UnattendFile.ps1 = AutomatedLabUnattended\Public\Import-UnattendFile.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedAdministratorName.ps1 = AutomatedLabUnattended\Public\Set-UnattendedAdministratorName.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedAdministratorPassword.ps1 = AutomatedLabUnattended\Public\Set-UnattendedAdministratorPassword.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedAntiMalware.ps1 = AutomatedLabUnattended\Public\Set-UnattendedAntiMalware.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedAutoLogon.ps1 = AutomatedLabUnattended\Public\Set-UnattendedAutoLogon.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedComputerName.ps1 = AutomatedLabUnattended\Public\Set-UnattendedComputerName.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedDomain.ps1 = AutomatedLabUnattended\Public\Set-UnattendedDomain.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedFirewallState.ps1 = AutomatedLabUnattended\Public\Set-UnattendedFirewallState.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedIpSettings.ps1 = AutomatedLabUnattended\Public\Set-UnattendedIpSettings.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedLocalIntranetSites.ps1 = AutomatedLabUnattended\Public\Set-UnattendedLocalIntranetSites.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedPackage.ps1 = AutomatedLabUnattended\Public\Set-UnattendedPackage.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedProductKey.ps1 = AutomatedLabUnattended\Public\Set-UnattendedProductKey.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedTimeZone.ps1 = AutomatedLabUnattended\Public\Set-UnattendedTimeZone.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedUserLocale.ps1 = AutomatedLabUnattended\Public\Set-UnattendedUserLocale.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedWorkgroup.ps1 = AutomatedLabUnattended\Public\Set-UnattendedWorkgroup.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Private", "Private", "{E2684456-7364-48F8-8D36-CDCE738F3285}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Redhat", "Redhat", "{B3AF9CA0-46D4-447A-8D01-CCD7F7C7A31F}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartNetworkAdapter.ps1 = AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartNetworkAdapter.ps1
+		AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartRenameNetworkAdapters.ps1 = AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartRenameNetworkAdapters.ps1
+		AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartSynchronousCommand.ps1 = AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartSynchronousCommand.ps1
+		AutomatedLabUnattended\Private\RedHat\Export-UnattendedKickstartFile.ps1 = AutomatedLabUnattended\Private\RedHat\Export-UnattendedKickstartFile.ps1
+		AutomatedLabUnattended\Private\RedHat\Import-UnattendedKickstartContent.ps1 = AutomatedLabUnattended\Private\RedHat\Import-UnattendedKickstartContent.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAdministratorName.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAdministratorName.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAdministratorPassword.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAdministratorPassword.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAntiMalware.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAntiMalware.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAutoLogon.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAutoLogon.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartComputerName.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartComputerName.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartDomain.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartDomain.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartFirewallState.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartFirewallState.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartIpSettings.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartIpSettings.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartLocalIntranetSites.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartLocalIntranetSites.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartPackage.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartPackage.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartProductKey.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartProductKey.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartTimeZone.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartTimeZone.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartUserLocale.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartUserLocale.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartWorkgroup.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartWorkgroup.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Suse", "Suse", "{8DD46CA3-D48D-4C7D-A5B0-4F58202B42E4}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLabUnattended\Private\Suse\Add-UnattendedYastNetworkAdapter.ps1 = AutomatedLabUnattended\Private\Suse\Add-UnattendedYastNetworkAdapter.ps1
+		AutomatedLabUnattended\Private\Suse\Add-UnattendedYastRenameNetworkAdapters.ps1 = AutomatedLabUnattended\Private\Suse\Add-UnattendedYastRenameNetworkAdapters.ps1
+		AutomatedLabUnattended\Private\Suse\Add-UnattendedYastSynchronousCommand.ps1 = AutomatedLabUnattended\Private\Suse\Add-UnattendedYastSynchronousCommand.ps1
+		AutomatedLabUnattended\Private\Suse\Export-UnattendedYastFile.ps1 = AutomatedLabUnattended\Private\Suse\Export-UnattendedYastFile.ps1
+		AutomatedLabUnattended\Private\Suse\Import-UnattendedYastContent.ps1 = AutomatedLabUnattended\Private\Suse\Import-UnattendedYastContent.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAdministratorName.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAdministratorName.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAdministratorPassword.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAdministratorPassword.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAntiMalware.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAntiMalware.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAutoLogon.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAutoLogon.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastComputerName.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastComputerName.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastDomain.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastDomain.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastFirewallState.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastFirewallState.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastIpSettings.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastIpSettings.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastLocalIntranetSites.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastLocalIntranetSites.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastPackage.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastPackage.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastProductKey.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastProductKey.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastTimeZone.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastTimeZone.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastUserLocale.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastUserLocale.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastWorkgroup.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastWorkgroup.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Win", "Win", "{3519A5CB-AE93-46DF-AC88-9B6B146BF5E7}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsNetworkAdapter.ps1 = AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsNetworkAdapter.ps1
+		AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsRenameNetworkAdapters.ps1 = AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsRenameNetworkAdapters.ps1
+		AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsSynchronousCommand.ps1 = AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsSynchronousCommand.ps1
+		AutomatedLabUnattended\Private\Win\Export-UnattendedWindowsFile.ps1 = AutomatedLabUnattended\Private\Win\Export-UnattendedWindowsFile.ps1
+		AutomatedLabUnattended\Private\Win\Import-UnattendedWindowsContent.ps1 = AutomatedLabUnattended\Private\Win\Import-UnattendedWindowsContent.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattededWindowsDomain.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattededWindowsDomain.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAdministratorName.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAdministratorName.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAdministratorPassword.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAdministratorPassword.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAntiMalware.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAntiMalware.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAutoLogon.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAutoLogon.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsComputerName.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsComputerName.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsFirewallState.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsFirewallState.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsIpSettings.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsIpSettings.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsLocalIntranetSites.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsLocalIntranetSites.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsPackage.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsPackage.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsProductKey.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsProductKey.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsTimeZone.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsTimeZone.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsUserLocale.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsUserLocale.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsWorkgroup.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsWorkgroup.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LabBuilder", "LabBuilder", "{9FFE3FB0-9410-494C-912E-10F091E03E77}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\LabBuilder\HostStart.ps1 = LabSources\CustomRoles\LabBuilder\HostStart.ps1
+		LabSources\CustomRoles\LabBuilder\PolarisLabBuilder.ps1 = LabSources\CustomRoles\LabBuilder\PolarisLabBuilder.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WindowsAdminCenter", "WindowsAdminCenter", "{0E26B77E-3AB2-4B78-8812-BEB983EC8197}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\WindowsAdminCenter\HostStart.ps1 = LabSources\CustomRoles\WindowsAdminCenter\HostStart.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Exchange2019", "Exchange2019", "{176FD7BD-6CB9-4FCA-8EDD-A02C68938657}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\Exchange2019\HostStart.ps1 = LabSources\CustomRoles\Exchange2019\HostStart.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "psconfig", "psconfig", "{E931A24D-E1CF-4A0E-A225-364B8CB85D52}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab\psfconfig\scriptblocks.ps1 = AutomatedLab\psfconfig\scriptblocks.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Office2019", "Office2019", "{CFBA7C26-FD09-4636-A867-E80BA6FE1DB6}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\Office2019\HostStart.ps1 = LabSources\CustomRoles\Office2019\HostStart.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlServer", "SqlServer", "{2E1EFB85-C5E9-43C0-9698-98F05DBE40A3}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\PostInstallationActivities\SqlServer\SetupSqlServerReportingServices.ps1 = LabSources\PostInstallationActivities\SqlServer\SetupSqlServerReportingServices.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CM-1902", "CM-1902", "{530672FA-8EB4-406B-AB14-06E94B550771}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\CM-1902\ConfigurationFile-SQL.ini = LabSources\CustomRoles\CM-1902\ConfigurationFile-SQL.ini
+		LabSources\CustomRoles\CM-1902\HostStart.ps1 = LabSources\CustomRoles\CM-1902\HostStart.ps1
+		LabSources\CustomRoles\CM-1902\Invoke-CustomiseCM.ps1 = LabSources\CustomRoles\CM-1902\Invoke-CustomiseCM.ps1
+		LabSources\CustomRoles\CM-1902\Invoke-DownloadADK.ps1 = LabSources\CustomRoles\CM-1902\Invoke-DownloadADK.ps1
+		LabSources\CustomRoles\CM-1902\Invoke-DownloadCM.ps1 = LabSources\CustomRoles\CM-1902\Invoke-DownloadCM.ps1
+		LabSources\CustomRoles\CM-1902\Invoke-DownloadMisc.ps1 = LabSources\CustomRoles\CM-1902\Invoke-DownloadMisc.ps1
+		LabSources\CustomRoles\CM-1902\Invoke-InstallCM.ps1 = LabSources\CustomRoles\CM-1902\Invoke-InstallCM.ps1
+		LabSources\CustomRoles\CM-1902\Invoke-UpdateCM.ps1 = LabSources\CustomRoles\CM-1902\Invoke-UpdateCM.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGetServer", "NuGetServer", "{1EEC9672-7D53-4564-AFAF-34A8036BE3C3}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\NuGetServer\HostStart.ps1 = LabSources\CustomRoles\NuGetServer\HostStart.ps1
+		LabSources\CustomRoles\NuGetServer\README.md = LabSources\CustomRoles\NuGetServer\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".build", ".build", "{409D0A98-C97A-4580-BF45-280752DE4F7F}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\NuGetServer\.build\build.ps1 = LabSources\CustomRoles\NuGetServer\.build\build.ps1
+		LabSources\CustomRoles\NuGetServer\.build\deploy.ps1 = LabSources\CustomRoles\NuGetServer\.build\deploy.ps1
+		LabSources\CustomRoles\NuGetServer\.build\test.ps1 = LabSources\CustomRoles\NuGetServer\.build\test.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab.Feed", "AutomatedLab.Feed", "{E7B6646D-9FAF-4AE5-B670-A2F741E85DB1}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed.sln = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed.sln
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab.Feed", "AutomatedLab.Feed", "{47CCA009-5AFB-48F3-984C-431EB80BFAB1}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\AutomatedLab.Feed.csproj = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\AutomatedLab.Feed.csproj
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Default.aspx = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Default.aspx
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\favicon.ico = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\favicon.ico
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\packages.config = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\packages.config
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Web.config = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Web.config
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Web.Debug.config = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Web.Debug.config
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Web.Release.config = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Web.Release.config
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "App_Start", "App_Start", "{411B5A16-8587-4ED3-8B4A-4AD53710B4B3}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\App_Start\NuGetODataConfig.cs = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\App_Start\NuGetODataConfig.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Properties", "Properties", "{4933BEF3-43BA-4C13-99D4-C1F8163F4620}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Properties\AssemblyInfo.cs = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Properties\AssemblyInfo.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PublishProfiles", "PublishProfiles", "{16B5F4A5-7B37-45A4-ACBF-474C32D308FD}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Properties\PublishProfiles\FolderProfile.pubxml = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Properties\PublishProfiles\FolderProfile.pubxml
 	EndProjectSection
 EndProject
 Global
@@ -602,12 +810,10 @@ Global
 		{3662119A-C291-4BEC-8C6C-EBE802042E7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3662119A-C291-4BEC-8C6C-EBE802042E7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3662119A-C291-4BEC-8C6C-EBE802042E7B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{3662119A-C291-4BEC-8C6C-EBE802042E7B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{3662119A-C291-4BEC-8C6C-EBE802042E7B}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{3662119A-C291-4BEC-8C6C-EBE802042E7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3662119A-C291-4BEC-8C6C-EBE802042E7B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3662119A-C291-4BEC-8C6C-EBE802042E7B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{3662119A-C291-4BEC-8C6C-EBE802042E7B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{3662119A-C291-4BEC-8C6C-EBE802042E7B}.Release|x86.ActiveCfg = Release|Any CPU
 		{A27BCDC6-9D37-46D2-805F-930A509EFC9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A27BCDC6-9D37-46D2-805F-930A509EFC9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
@@ -684,9 +890,29 @@ Global
 		{2BBF31B2-6129-40EC-9F92-A983D0CEE3DF} = {9973283D-AB99-434B-B67F-7E32C4F36370}
 		{38C82807-0968-4EBC-B5C8-693B969CF13F} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 		{BC3F2FEF-7A8C-40AE-A4AA-47937417D9B0} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{572648CE-ED10-4649-A612-76B0D6877884} = {40429016-010A-47B7-AF3B-2851A5BB19BF}
 		{6C3621FE-6083-4F1A-8371-8CCF4DB53FDD} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 		{90FAE784-7B86-4CBA-A5A4-EB8CD275BF69} = {D1BDF6ED-8F1B-4254-9993-3A27BA640F4E}
 		{3CFA5148-30AC-4685-B80B-8E7D4FDD2AE6} = {90FAE784-7B86-4CBA-A5A4-EB8CD275BF69}
+		{B0910874-C607-4643-96AD-AADDA639E365} = {631E3AA3-71BA-4BE2-BEEE-8B96AE7E60F6}
+		{E2684456-7364-48F8-8D36-CDCE738F3285} = {631E3AA3-71BA-4BE2-BEEE-8B96AE7E60F6}
+		{B3AF9CA0-46D4-447A-8D01-CCD7F7C7A31F} = {E2684456-7364-48F8-8D36-CDCE738F3285}
+		{8DD46CA3-D48D-4C7D-A5B0-4F58202B42E4} = {E2684456-7364-48F8-8D36-CDCE738F3285}
+		{3519A5CB-AE93-46DF-AC88-9B6B146BF5E7} = {E2684456-7364-48F8-8D36-CDCE738F3285}
+		{9FFE3FB0-9410-494C-912E-10F091E03E77} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{0E26B77E-3AB2-4B78-8812-BEB983EC8197} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{176FD7BD-6CB9-4FCA-8EDD-A02C68938657} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{E931A24D-E1CF-4A0E-A225-364B8CB85D52} = {03FEFD6A-B999-4BBA-875B-6CFA083E43CC}
+		{CFBA7C26-FD09-4636-A867-E80BA6FE1DB6} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{2E1EFB85-C5E9-43C0-9698-98F05DBE40A3} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
+		{530672FA-8EB4-406B-AB14-06E94B550771} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{1EEC9672-7D53-4564-AFAF-34A8036BE3C3} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{409D0A98-C97A-4580-BF45-280752DE4F7F} = {1EEC9672-7D53-4564-AFAF-34A8036BE3C3}
+		{E7B6646D-9FAF-4AE5-B670-A2F741E85DB1} = {1EEC9672-7D53-4564-AFAF-34A8036BE3C3}
+		{47CCA009-5AFB-48F3-984C-431EB80BFAB1} = {E7B6646D-9FAF-4AE5-B670-A2F741E85DB1}
+		{411B5A16-8587-4ED3-8B4A-4AD53710B4B3} = {47CCA009-5AFB-48F3-984C-431EB80BFAB1}
+		{4933BEF3-43BA-4C13-99D4-C1F8163F4620} = {47CCA009-5AFB-48F3-984C-431EB80BFAB1}
+		{16B5F4A5-7B37-45A4-ACBF-474C32D308FD} = {4933BEF3-43BA-4C13-99D4-C1F8163F4620}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E716662E-EF8D-4B55-AAEE-8AB4FFD8A321}

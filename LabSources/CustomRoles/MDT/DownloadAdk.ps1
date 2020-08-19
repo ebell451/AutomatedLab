@@ -1,10 +1,15 @@
 param(
     [Parameter(Mandatory)]
-    [string]$AdkDownloadPath
+    [string]$AdkDownloadUrl,
+
+    [Parameter(Mandatory)]
+    [string]$AdkDownloadPath,
+
+    [Parameter(Mandatory)]
+    [string]$AdkWinPeDownloadUrl
 )
 
-$windowsAdkUrl = 'http://download.microsoft.com/download/3/1/E/31EC1AAF-3501-4BB4-B61C-8BD8A07B4E8A/adk/adksetup.exe'
-$adkSetup = Get-LabInternetFile -Uri $windowsAdkUrl -Path $labSources\SoftwarePackages -PassThru
+$adkSetup = Get-LabInternetFile -Uri $AdkDownloadUrl -Path $labSources\SoftwarePackages -PassThru
 
 if (-not (Test-Path -Path $AdkDownloadPath))
 {
@@ -18,5 +23,22 @@ if (-not (Test-Path -Path $AdkDownloadPath))
 }
 else
 {
-    Write-ScreenInfo "ADK folder does already exist, skipping the download. Delete the folder '$AdkDownloadPath' if you want to download again."
+    Write-ScreenInfo "ADK folder already exists, skipping the download. Delete the folder '$AdkDownloadPath' if you want to download again."
+}
+
+$adkWinPeSetup = Get-LabInternetFile -Uri $AdkWinPeDownloadUrl -Path $labSources\SoftwarePackages -PassThru
+
+if (-not (Test-Path -Path $AdkWinPEDownloadPath))
+{
+    $p = Start-Process -FilePath $adkWinPeSetup.FullName -ArgumentList "/quiet /layout $AdkWinPEDownloadPath" -PassThru
+    Write-ScreenInfo "Waiting for ADK Windows PE Addons to download files" -NoNewLine
+    while (-not $p.HasExited) {
+        Write-ScreenInfo '.' -NoNewLine
+        Start-Sleep -Seconds 10
+    }
+    Write-ScreenInfo 'finished'
+}
+else
+{
+    Write-ScreenInfo "ADK Windows PE Addons folder already exists, skipping the download. Delete the folder '$AdkWinPEDownloadPath' if you want to download again."
 }

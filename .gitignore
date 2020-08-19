@@ -6,6 +6,11 @@
 *.user
 *.userosscache
 *.sln.docstates
+AutomatedLab/lib/
+scratch
+
+# Ignore help
+*-help.xml
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -243,3 +248,6 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+
+#AL DLLs
+AutomatedLab/*.dll

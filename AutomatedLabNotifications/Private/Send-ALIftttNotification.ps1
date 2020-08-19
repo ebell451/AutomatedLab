@@ -1,4 +1,4 @@
-function Send-ALIftttNotification
+﻿function Send-ALIftttNotification
 {
     param
     (
@@ -13,8 +13,8 @@ function Send-ALIftttNotification
 
     $lab = Get-Lab -ErrorAction SilentlyContinue
 
-    $key = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Ifttt.Key
-    $eventName = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Ifttt.EventName
+    $key = Get-LabConfigurationItem -Name Notifications.NotificationProviders.Ifttt.Key
+    $eventName = Get-LabConfigurationItem -Name Notifications.NotificationProviders.Ifttt.EventName
 
     $messageBody = @{
         value1 = $lab.Name + " on " + $lab.DefaultVirtualizationEngine
@@ -22,17 +22,17 @@ function Send-ALIftttNotification
         value3 = $Message
     }
 
-    try 
+    try
     {
         $request = Invoke-WebRequest -Method Post -Uri https://maker.ifttt.com/trigger/$($eventName)/with/key/$($key) -ContentType "application/json" -Body ($messageBody | ConvertTo-Json -Compress) -ErrorAction Stop
-        
+
         if (-not $request.StatusCode -eq 200)
         {
-            Write-Verbose -Message "Notification to IFTTT could not be sent with event $eventName. Status code was $($request.StatusCode)"
+            Write-PSFMessage -Message "Notification to IFTTT could not be sent with event $eventName. Status code was $($request.StatusCode)"
         }
     }
-    catch 
+    catch
     {
-        Write-Verbose -Message "Notification to IFTTT could not be sent with event $eventName."
-    }    
+        Write-PSFMessage -Message "Notification to IFTTT could not be sent with event $eventName."
+    }
 }

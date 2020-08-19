@@ -34,7 +34,7 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:Network' = $labName
     'Add-LabMachineDefinition:Processors' = 2
     'Add-LabMachineDefinition:Memory' = 768MB
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 Datacenter (Desktop Experience)'
 }
 
 #Defining contoso.com machines
@@ -44,7 +44,7 @@ Add-LabMachineDefinition -Name ContosoDC1 -IpAddress 192.168.41.10 `
 $role = Get-LabMachineRoleDefinition -Role DC
 Add-LabMachineDefinition -Name ContosoDC2 -DiskName BackupRoot -IpAddress 192.168.41.11 `
     -DnsServer1 192.168.41.10 -DnsServer2 192.168.41.11 -DomainName contoso.com  -Roles DC
-    
+
 if ($addMemberServer)
 {
     Add-LabMachineDefinition -Name ContosoMember1 -IpAddress 192.168.41.12 -DnsServer1 192.168.41.10 -DnsServer2 192.168.41.11 -DomainName contoso.com
@@ -71,7 +71,6 @@ Install-LabWindowsFeature -ComputerName (Get-LabVM | Where-Object { $_.Disks }) 
 
 #Install software to all lab machines
 $machines = Get-LabVM
-Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu' -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Winrar.exe -CommandLine /S -AsJob
 Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
