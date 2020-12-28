@@ -714,11 +714,15 @@ function Install-Lab
         [switch]$Office2016,
         [switch]$AzureServices,
         [switch]$TeamFoundation,
+        [switch]$FailoverStorage,
         [switch]$FailoverCluster,
         [switch]$FileServer,
         [switch]$HyperV,
+        [switch]$WindowsAdminCenter,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
+        [switch]$InstallRdsCertificates,
+        [switch]$PostDeploymentTests,
         [switch]$NoValidation,
         [int]$DelayBetweenComputers
     )
@@ -977,10 +981,20 @@ function Install-Lab
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
-
-    if (($FailoverCluster -or $performAll) -and (Get-LabVM -Role FailoverNode,FailoverStorage | Where-Object { -not $_.SkipDeployment }))
+    
+    if (($FailoverStorage -or $performAll) -and (Get-LabVM -Role FailoverStorage | Where-Object { -not $_.SkipDeployment }))
     {
-        Write-ScreenInfo -Message 'Installing Failover cluster' -TaskStart
+        Write-ScreenInfo -Message 'Installing Failover Storage' -TaskStart
+
+        Start-LabVM -RoleName FailoverStorage -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
+        Install-LabFailoverStorage
+
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+
+    if (($FailoverCluster -or $performAll) -and (Get-LabVM -Role FailoverNode, FailoverStorage | Where-Object { -not $_.SkipDeployment }))
+    {
+        Write-ScreenInfo -Message 'Installing Failover Cluster' -TaskStart
 
         Start-LabVM -RoleName FailoverNode,FailoverStorage -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
         Install-LabFailoverCluster
@@ -1037,7 +1051,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if ((Get-LabVm -Role WindowsAdminCenter))
+    if (($WindowsAdminCenter -or $performAll) -and (Get-LabVm -Role WindowsAdminCenter))
     {
         Write-ScreenInfo -Message 'Installing Windows Admin Center Servers' -TaskStart
         Write-ScreenInfo -Message "Machines to have Windows Admin Center installed: '$((Get-LabVM -Role WindowsAdminCenter | Where-Object { -not $_.SkipDeployment }).Name -join ', ')'"
@@ -1140,9 +1154,9 @@ function Install-Lab
         if ($linuxHosts)
         {
             Write-ScreenInfo -Type Warning -Message "There are $linuxHosts Linux hosts in the lab.
-        On Windows, those are installed from scratch and do not use differencing disks.
+                On Windows, those are installed from scratch and do not use differencing disks.
         
-        This process may take up to 30 minutes."
+            This process may take up to 30 minutes."
         }
 
         if (-not $DelayBetweenComputers)
@@ -1193,7 +1207,14 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    Install-LabRdsCertificate
+    if ($InstallRdsCertificates -or $performAll)
+    {
+        Write-ScreenInfo -Message 'Installing RDS certificates of lab machines' -TaskStart
+        
+        Install-LabRdsCertificate
+        
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
 
     try
     {
@@ -1205,18 +1226,25 @@ function Install-Lab
         Write-PSFMessage -Message ('Error sending telemetry: {0}' -f $_.Exception)
     }
 
-    if (-not $NoValidation.IsPresent -and (Get-InstalledModule -Name pester -MinimumVersion 5.0))
+    if (-not $NoValidation -and ($performAll -or $PostDeploymentTests))
     {
-        Write-ScreenInfo -Type Verbose -Message "Testing deployment with Pester"
-        $result = Invoke-LabPester -Lab (Get-Lab) -Show Normal -PassThru
-        if ($result.Result -eq 'Failed')
-        {
-            Write-ScreenInfo -Type Error -Message "Lab deployment seems to have failed. The following tests were not passed:"
-        }
+        if (Get-InstalledModule -Name Pester -MinimumVersion 5.0 -ErrorAction SilentlyContinue)
+        {    
+            Write-ScreenInfo -Type Verbose -Message "Testing deployment with Pester"
+            $result = Invoke-LabPester -Lab (Get-Lab) -Show Normal -PassThru
+            if ($result.Result -eq 'Failed')
+            {
+                Write-ScreenInfo -Type Error -Message "Lab deployment seems to have failed. The following tests were not passed:"
+            }
 
-        foreach ($fail in $result.Failed)
+            foreach ($fail in $result.Failed)
+            {
+                Write-ScreenInfo -Type Error -Message "$($fail.Name)"
+            }
+        }
+        else
         {
-            Write-ScreenInfo -Type Error -Message "$($fail.Name)"
+            Write-Warning "Cannot run post-deployment Pester test as there is no Pester version 5.0+ installed. Please run 'Install-Module -Name Pester -Force' if you want the post-deployment script to work. You can start the post-deployment tests separately with the command 'Install-Lab -PostDeploymentTests'"
         }
     }
 
@@ -3406,7 +3434,7 @@ function New-LabSourcesFolder
     {
         $temporaryPath = [System.IO.Path]::GetTempFileName().Replace('.tmp', '')
         [void] (New-Item -ItemType Directory -Path $temporaryPath -Force)
-        $archivePath = (Join-Path -Path $temporaryPath -ChildPath 'master.zip')
+        $archivePath = (Join-Path -Path $temporaryPath -ChildPath "$Branch.zip")
 
         try
         {
@@ -3416,6 +3444,7 @@ function New-LabSourcesFolder
         {
             Write-Error "Could not download the LabSources folder due to connection issues. Please try again." -ErrorAction Stop
         }
+
         Microsoft.PowerShell.Archive\Expand-Archive -Path $archivePath -DestinationPath $temporaryPath
 
         if (-not (Test-Path -Path $Path))
@@ -3423,7 +3452,7 @@ function New-LabSourcesFolder
             $Path = (New-Item -ItemType Directory -Path $Path).FullName
         }
 
-        Copy-Item -Path (Join-Path -Path $temporaryPath -ChildPath AutomatedLab-master/LabSources/*) -Destination $Path -Recurse -Force:$Force
+        Copy-Item -Path (Join-Path -Path $temporaryPath -ChildPath AutomatedLab-*/LabSources/*) -Destination $Path -Recurse -Force:$Force
 
         Remove-Item -Path $temporaryPath -Recurse -Force -ErrorAction SilentlyContinue
 

@@ -500,9 +500,9 @@
             name       = $disk.Name
             location   = "[resourceGroup().location]"
             sku        = @{
-                name = if ($vm.AzureProperties.ContainsKey('StorageSku'))
+                name = if ($vm.AzureProperties.StorageSku)
                 {
-                    $vm.AzureProperties['StorageSku'] 
+                    $vm.AzureProperties['StorageSku']
                 }
                 else
                 {
@@ -526,10 +526,29 @@
         {
             Write-ScreenInfo -Type Verbose -Message ('Creating NIC {0}' -f $nic.InterfaceName)
             $subnetName = 'default'
-            if (($nic.VirtualSwitch.Subnets | Where-Object -Property Name -ne AzureBastionSubnet | Select-Object -First 1).Name)
+
+            foreach ($subnetConfig in $nic.VirtualSwitch.Subnets)
             {
-                $subnetName = ($nic.VirtualSwitch.Subnets | Where-Object -Property Name -ne AzureBastionSubnet | Select-Object -First 1).Name
+                if ($subnetConfig.Name -eq 'AzureBastionSubnet') { continue }
+
+                $usable = Get-NetworkRange -IPAddress $subnetConfig.AddressSpace.IpAddress.AddressAsString -SubnetMask $subnetConfig.AddressSpace.Cidr
+                if ($nic.Ipv4Address[0].IpAddress.AddressAsString -in $usable)
+                {
+                    $subnetName = $subnetConfig.Name
+                }
             }
+
+            $machineInboundRules = @(
+                @{
+                    id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'),'/inboundNatRules/$($machine.ResourceName.ToLower())rdpin')]"
+                }
+                @{
+                    id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'),'/inboundNatRules/$($machine.ResourceName.ToLower())winrmin')]"
+                }
+                @{
+                    id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'),'/inboundNatRules/$($machine.ResourceName.ToLower())winrmhttpsin')]"
+                }
+            )
              
             $nicTemplate = @{
                 dependsOn  = @(
@@ -547,23 +566,7 @@
                                 primary                         = $true
                                 privateIPAllocationMethod       = "Static"
                                 privateIPAddress                = $nic.Ipv4Address[0].IpAddress.AddressAsString
-                                privateIPAddressVersion         = "IPv4"                                
-                                loadBalancerBackendAddressPools = @(
-                                    @{
-                                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'), '/backendAddressPools/$($Lab.Name)$($nic.VirtualSwitch.ResourceName)backendpoolconfig')]"
-                                    }
-                                )
-                                loadBalancerInboundNatRules     = @(
-                                    @{
-                                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'),'/inboundNatRules/$($machine.ResourceName.ToLower())rdpin')]"
-                                    }
-                                    @{
-                                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'),'/inboundNatRules/$($machine.ResourceName.ToLower())winrmin')]"
-                                    }
-                                    @{
-                                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'),'/inboundNatRules/$($machine.ResourceName.ToLower())winrmhttpsin')]"
-                                    }
-                                )
+                                privateIPAddressVersion         = "IPv4"
                             }
                             name       = "ipconfig1"
                         }
@@ -578,6 +581,17 @@
                     AutomatedLab = $Lab.Name
                     CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                 }
+            }
+
+            # Add NAT only to first nic
+            if ($niccount -eq 0)
+            {
+                $nicTemplate.properties.ipConfigurations[0].properties.loadBalancerInboundNatRules = $machineInboundRules
+                $nicTemplate.properties.ipConfigurations[0].properties.loadBalancerBackendAddressPools = @(
+                    @{
+                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'), '/backendAddressPools/$($Lab.Name)$($nic.VirtualSwitch.ResourceName)backendpoolconfig')]"
+                    }
+                )
             }
 
             if ($nic.Ipv4DnsServers)
@@ -1317,7 +1331,7 @@ function Initialize-LWAzureVM
 
             foreach ($line in $disks)
             {
-                if ($line -match 'Disk (?<DiskNumber>\d) \s+(Online|Offline)\s+(?<Size>\d+) GB\s+(?<Free>\d+) (B|GB)')
+                if ($line -match 'Disk (?<DiskNumber>\d{1,3}) \s+(?<State>Online|Offline)\s+(?<Size>\d+) (KB|MB|GB|TB)\s+(?<Free>\d+) (B|KB|MB|GB|TB)')
                 {
                     $nextDriveLetter = [char[]](67..90) |
                         Where-Object { (Get-WmiObject -Class Win32_LogicalDisk |
@@ -1423,7 +1437,7 @@ function Remove-LWAzureVM
 {
     Param (
         [Parameter(Mandatory)]
-        [string]$ComputerName,
+        [string]$Name,
 
         [switch]$AsJob,
 
@@ -1437,33 +1451,28 @@ function Remove-LWAzureVM
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
 
     $Lab = Get-Lab
-
-    if ($AsJob)
+    $vm = Get-AzVM -ResourceGroupName $Lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -Name $Name -ErrorAction SilentlyContinue
+    $null = $vm | Remove-AzVM -Force
+    foreach ($loadBalancer in (Get-AzLoadBalancer -ResourceGroupName $Lab.AzureSettings.DefaultResourceGroup.ResourceGroupName))
     {
-        $job = Start-Job -ScriptBlock {
-            param (
-                [Parameter(Mandatory)]
-                [hashtable]$ComputerName
-            )
-
-            $resourceGroup = ((Get-LabVM -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName)
-
-            $vm = Get-AzVM -ResourceGroupName $resourceGroup -Name $ComputerName
-
-            $vm | Remove-AzVM -Force
-        } -ArgumentList $ComputerName
-
-        if ($PassThru)
+        $rules = $loadBalancer | Get-AzLoadBalancerInboundNatRuleConfig | Where-Object Name -like "$($Name)*"
+        foreach ($rule in $rules)
         {
-            $job
+            $null = Remove-AzLoadBalancerInboundNatRuleConfig -LoadBalancer $loadBalancer -Name $rule.Name -Confirm:$false
         }
     }
-    else
-    {
-        $resourceGroup = ((Get-LabVM -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName)
-        $vm = Get-AzVM -ResourceGroupName $resourceGroup -Name $ComputerName
 
-        $result = $vm | Remove-AzVM -Force
+    $vmResources = Get-AzResource -ResourceGroupName $Lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -Name "$($name)*"
+    $jobs = $vmResources | Remove-AzResource -AsJob -Force -Confirm:$false
+
+    if (-not $AsJob.IsPresent)
+    {
+        $null = $jobs | Wait-Job
+    }
+
+    if ($PassThru.IsPresent)
+    {
+        $jobs
     }
 
     Write-LogFunctionExit
@@ -2309,7 +2318,10 @@ function Restore-LWAzureVmSnapshot
         }
     }
 
-    $null = $machineStatus.Values.Stage1.Job | Wait-Job
+    if ($machineStatus.Values.Stage1.Job)
+    {
+        $null = $machineStatus.Values.Stage1.Job | Wait-Job
+    }
 
     $failedStage1 = $($machineStatus.GetEnumerator() | Where-Object -FilterScript {$_.Value.Stage1.Job.State -eq 'Failed'}).Name
     if ($failedStage1) { Write-ScreenInfo -Type Error -Message "The following machines failed to create a new disk from the snapshot: $($failedStage1 -join ',')"}
@@ -2326,7 +2338,10 @@ function Restore-LWAzureVmSnapshot
         }
     }
 
-    $null = $machineStatus.Values.Stage2.Job | Wait-Job
+    if ($machineStatus.Values.Stage2.Job)
+    {
+        $null = $machineStatus.Values.Stage2.Job | Wait-Job
+    }
 
     $failedStage2 = $($machineStatus.GetEnumerator() | Where-Object -FilterScript {$_.Value.Stage2.Job.State -eq 'Failed'}).Name
     if ($failedStage2) { Write-ScreenInfo -Type Error -Message "The following machines failed to update with the new OS disk created from a snapshot: $($failedStage2 -join ',')"}
@@ -2340,8 +2355,10 @@ function Restore-LWAzureVmSnapshot
             Job = Remove-AzDisk -ResourceGroupName $resourceGroupName -DiskName $disk -Confirm:$false -Force -AsJob
         }
     }
-
-    $null = $machineStatus.Values.Stage3.Job | Wait-Job
+    if ($machineStatus.Values.Stage3.Job)
+    {
+        $null = $machineStatus.Values.Stage3.Job | Wait-Job
+    }
 
     $failedStage3 = $($machineStatus.GetEnumerator() | Where-Object -FilterScript {$_.Value.Stage3.Job.State -eq 'Failed'}).Name
     if ($failedStage3)
@@ -2361,7 +2378,11 @@ function Restore-LWAzureVmSnapshot
         Start-LWAzureVM -ComputerName $runningMachines
         Wait-LabVM -ComputerName $runningMachines
     }
-    $machineStatus.Values.Values.Job | Remove-Job
+
+    if ($machineStatus.Values.Values.Job)
+    {
+        $machineStatus.Values.Values.Job | Remove-Job
+    }
 
     Write-LogFunctionExit
 }
